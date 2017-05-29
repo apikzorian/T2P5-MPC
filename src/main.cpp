@@ -98,8 +98,49 @@ int main() {
           * Both are in between [-1, 1].
           *
           */
-          double steer_value;
-          double throttle_value;
+          std::cout << "Checkpoint #1" << std::endl;
+
+          // Convert points to vehicle coordinates
+          for (int i = 0; i < ptsx.size(); i++) {
+           double dtx = ptsx[i] - px;
+           double dty = ptsy[i] - py;
+           
+           ptsx[i] = dtx * cos(psi) + dty * sin(psi);
+           ptsy[i] = dty * cos(psi) - dtx * sin(psi);
+           
+         }
+
+
+          double* ptsx_ptr = &ptsx[0];
+          double* ptsy_ptr = &ptsy[0];
+
+          Eigen::Map<Eigen::VectorXd> ptsxE(ptsx_ptr, ptsx.size());
+          Eigen::Map<Eigen::VectorXd> ptsyE(ptsy_ptr, ptsy.size());
+
+          auto coeffs = polyfit(ptsxE, ptsyE, 3);
+
+          double cte = polyeval(coeffs, px) - py;
+          // Due to the sign starting at 0, the orientation error is -f'(x).
+          // derivative of coeffs[0] + coeffs[1] * x -> coeffs[1]
+          double epsi = psi - atan(coeffs[1] + (2 * coeffs[2] * px) + (3 * coeffs[3]* (px*px)));
+
+
+          Eigen::VectorXd state(6);
+          //state << px, py, psi, v, cte, epsi;
+          state << px, py, psi, v, cte, epsi;
+          auto vars = mpc.Solve(state,coeffs);
+          std::cout << "Printing first mpc.Solve values: " << std::endl;
+           for (int i = 0; i < vars.size(); i++) {
+              std::cout << "vars[" << i << "] = " << vars[i] << std::endl;
+            }
+
+
+          double steer_value = -vars[6];
+          double throttle_value = vars[7];
+
+          std::cout << "steer_value: " << steer_value << std::endl;
+          std::cout << "throttle_value: " << throttle_value << std::endl;
+
 
           json msgJson;
           // NOTE: Remember to divide by deg2rad(25) before you send the steering value back.
@@ -108,8 +149,20 @@ int main() {
           msgJson["throttle"] = throttle_value;
 
           //Display the MPC predicted trajectory 
-          vector<double> mpc_x_vals;
-          vector<double> mpc_y_vals;
+          vector<double> mpc_x_vals(ptsx.size());
+          vector<double> mpc_y_vals(ptsx.size());
+
+
+         std::cout << "Green line x y coordinates: " << std::endl;
+        for (int i = 0; i < (ptsx.size() - 1); i++) {
+            state << ptsx[i],ptsy[i],psi,v,cte,epsi;
+            vector<double> res  = mpc.Solve(state,coeffs);
+            std::cout << "(" << res[0] << "," << res[1] << ")" << std::endl;
+
+            mpc_x_vals.push_back(res[0]);
+            mpc_y_vals.push_back(res[1]);
+
+          }
 
           //.. add (x,y) points to list here, points are in reference to the vehicle's coordinate system
           // the points in the simulator are connected by a Green line
@@ -118,11 +171,18 @@ int main() {
           msgJson["mpc_y"] = mpc_y_vals;
 
           //Display the waypoints/reference line
-          vector<double> next_x_vals;
-          vector<double> next_y_vals;
+          vector<double> next_x_vals(ptsx.size());
+          vector<double> next_y_vals(ptsx.size());
 
           //.. add (x,y) points to list here, points are in reference to the vehicle's coordinate system
           // the points in the simulator are connected by a Yellow line
+           std::cout << "Yellow line x y coordinates: " << std::endl;
+
+          for (int i = 0; i < ptsx.size(); i++) {
+            next_x_vals[i] = ptsx[i];
+            next_y_vals[i] = ptsy[i];
+            std::cout << "(" << ptsx[i] << "," << ptsy[i] << ")" << std::endl;
+          }
 
           msgJson["next_x"] = next_x_vals;
           msgJson["next_y"] = next_y_vals;
@@ -139,7 +199,7 @@ int main() {
           //
           // NOTE: REMEMBER TO SET THIS TO 100 MILLISECONDS BEFORE
           // SUBMITTING.
-          this_thread::sleep_for(chrono::milliseconds(100));
+          this_thread::sleep_for(chrono::milliseconds(15));
           ws.send(msg.data(), msg.length(), uWS::OpCode::TEXT);
         }
       } else {
