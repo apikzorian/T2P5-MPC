@@ -94,4 +94,4 @@ Waypoints were converted from map coordinates to vehicle coordinates to simplify
 Latency can be thought of as the delay as the actuation command propagates through the system in a car. This latency may be on the order of 100 milliseconds and presents a difficult challenge for some controllers. With MPC, however, we were able to incorporate the latency into the system by predicting the state after 100 ms and then using this new state for our solver. By incorporating the latency, we were able to guarantee that the simulator was receiving the most real0time state of the vehicle. 
 
 ### Result
-[Python 3.5](https://www.continuum.io/downloads) is a video showing the car driving around the simulated track. The vehicle is being controled by the modeled MPC
+[Here](https://youtu.be/OdUzeeLnyFA) is a video showing the car driving around the simulated track. The vehicle is being controled by the modeled MPC
