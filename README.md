@@ -67,13 +67,14 @@ Actuators are inputs that allow us to control the vehicle's state. Most cars hav
 ### 3. Update Equations
 
 We used the update equations below:
-
-`x_[t+1] = x[t] + v[t] * cos(psi[t]) * dt
+```
+x_[t+1] = x[t] + v[t] * cos(psi[t]) * dt
 y_[t+1] = y[t] + v[t] * sin(psi[t]) * dt
 psi_[t+1] = psi[t] + v[t] / Lf * delta[t] * dt
 v_[t+1] = v[t] + a[t] * dt
 cte[t+1] = f(x[t]) - y[t] + v[t] * sin(epsi[t]) * dt
-epsi[t+1] = psi[t] - psides[t] + v[t] * delta[t] / Lf * dt`
+epsi[t+1] = psi[t] - psides[t] + v[t] * delta[t] / Lf * dt
+```
 
 
 ## Timestep Length and Elapsed Duration (N & dt)
@@ -93,4 +94,4 @@ Waypoints were converted from map coordinates to vehicle coordinates to simplify
 Latency can be thought of as the delay as the actuation command propagates through the system in a car. This latency may be on the order of 100 milliseconds and presents a difficult challenge for some controllers. With MPC, however, we were able to incorporate the latency into the system by predicting the state after 100 ms and then using this new state for our solver. By incorporating the latency, we were able to guarantee that the simulator was receiving the most real0time state of the vehicle. 
 
 ### Result
-Here is a video showing the car driving around the simulated track. The vehicle is being controled by the modeled MPC
+[Here] (https://youtu.be/_0kk6iRglls) is a video showing the car driving around the simulated track. The vehicle is being controled by the modeled MPC
