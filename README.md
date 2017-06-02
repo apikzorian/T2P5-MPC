@@ -80,12 +80,17 @@ epsi[t+1] = psi[t] - psides[t] + v[t] * delta[t] / Lf * dt`
 
 Timestep Length (N) is the number of variables optimized by the MPC and is the major driver of computational cost, while the elapsed duration (dt) is how much time is elapsed between actuations. For example, if N were 20 and dt were 0.5, then T would be 10 seconds.
 
-I experimented with different dt values (0.1+) but when I dropped down to 0.05, the vehicle was driving significantly less 
+I experimented with different dt values (0.1+) but when I dropped down to 0.05, the vehicle was driving significantly more stable. In our quiz, we had set our N to 25. I quickly that with such a high time step, the solver would in fact be optimizing more variables than necessary and would not be able to execute in the allocated cpu time. 
 
+My final choices for my variables were 12 for my N and 0.05 for my dt.
 
+## Polynomial Fitting and MPC Preprocessing
 
+Waypoints were converted from map coordinates to vehicle coordinates to simplify processing for the MPC. We fit a third degree polynomial with the waypoints.
 
+## Model Predictive Control with Latency
 
+Latency can be thought of as the delay as the actuation command propagates through the system in a car. This latency may be on the order of 100 milliseconds and presents a difficult challenge for some controllers. With MPC, however, we were able to incorporate the latency into the system by predicting the state after 100 ms and then using this new state for our solver. By incorporating the latency, we were able to guarantee that the simulator was receiving the most real0time state of the vehicle. 
 
 ### Result
 Here is a video showing the car driving around the simulated track. The vehicle is being controled by the modeled MPC
